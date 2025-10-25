@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYAB Pattern Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🧶 AYAB Pattern Viewer</h1>
+            <p class="subtitle">Browse the All Yarns Are Beautiful pattern collection</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="controls">
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search patterns by number (e.g., 001, 42, 100)"
+                    aria-label="Search patterns"
+                >
+            </div>
+
+            <div class="view-controls">
+                <label for="gridSize">Grid Size:</label>
+                <select id="gridSize" aria-label="Select grid size">
+                    <option value="small">Small</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="large">Large</option>
+                </select>
+
+                <label for="sortOrder">Sort:</label>
+                <select id="sortOrder" aria-label="Select sort order">
+                    <option value="asc">1 → 408</option>
+                    <option value="desc">408 → 1</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats">
+            <span id="patternCount">Loading patterns...</span>
+        </div>
+
+        <div id="gallery" class="gallery medium">
+            <div class="loading">Loading patterns...</div>
+        </div>
+    </main>
+
+    <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close modal">&times;</button>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="" />
+                <div class="modal-info">
+                    <h2 id="modalTitle"></h2>
+                    <div class="modal-actions">
+                        <a id="downloadLink" href="" download class="btn">Download PNG</a>
+                        <a id="viewOriginal" href="" target="_blank" class="btn btn-secondary">View on GitHub</a>
+                    </div>
+                    <button id="prevPattern" class="nav-btn prev" aria-label="Previous pattern">←</button>
+                    <button id="nextPattern" class="nav-btn next" aria-label="Next pattern">→</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>
+                Pattern collection from
+                <a href="https://github.com/AllYarnsAreBeautiful/ayab-patterns" target="_blank" rel="noopener noreferrer">
+                    AllYarnsAreBeautiful/ayab-patterns
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
