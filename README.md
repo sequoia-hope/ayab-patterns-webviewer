@@ -9,11 +9,17 @@ A modern web viewer for browsing the [AYAB (All Yarns Are Beautiful) pattern col
 
 ## Features
 
-- **Grid Gallery**: Browse all 408 patterns in a responsive grid layout
-- **Search**: Find patterns by number (e.g., 001, 42, 100)
-- **Grid Size Options**: Choose between small, medium, and large grid sizes
-- **Sorting**: View patterns in ascending (1→408) or descending (408→1) order
-- **Modal Viewer**: Click any pattern to view it full-size
+- **Complete Collection**: Browse all 1,377+ patterns from 5 different collections
+  - StitchWorld (555 patterns)
+  - StitchWorld 2 (40 patterns)
+  - StitchWorld 3 (683 patterns)
+  - StitchWorld Extras (63 patterns)
+  - KH910 (36 patterns)
+- **Collection Filtering**: Toggle collections on/off to focus on specific pattern sets
+- **Search**: Find patterns by filename or collection name
+- **Grid Gallery**: Responsive grid layout with adjustable size (small, medium, large)
+- **Sorting**: View patterns in alphabetical order (A→Z or Z→A)
+- **Modal Viewer**: Click any pattern to view it full-size with collection context
 - **Keyboard Navigation**: Use arrow keys to navigate between patterns in modal view
 - **Direct Downloads**: Download individual pattern PNG files
 - **GitHub Links**: Quick access to view patterns on the original repository
@@ -32,8 +38,7 @@ ayab-viewer/
 
 ## How It Works
 
-The viewer loads pattern images directly from the GitHub repository using the GitHub raw content URL:
-`https://raw.githubusercontent.com/AllYarnsAreBeautiful/ayab-patterns/main/StitchWorld/`
+The viewer dynamically loads pattern metadata from the GitHub API and displays images directly from the repository using GitHub's raw content URLs. It discovers all PNG files across all 5 pattern collections automatically.
 
 No build process or backend is required - it's a pure static site that can be hosted anywhere.
 
@@ -67,19 +72,24 @@ Works in all modern browsers:
 
 ## Customization
 
-### Change the Number of Patterns
-
-Edit `script.js` line 2:
-```javascript
-const TOTAL_PATTERNS = 408; // Change this number
-```
-
 ### Point to a Different Repository
 
-Edit `script.js` line 1:
+Edit the configuration in `script.js`:
 ```javascript
-const REPO_BASE_URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/FOLDER/';
+const REPO_BASE_URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/';
+const API_BASE_URL = 'https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/contents/';
 ```
+
+### Add or Remove Collections
+
+Edit the `COLLECTIONS` array in `script.js`:
+```javascript
+const COLLECTIONS = [
+    { name: 'FolderName', displayName: 'Display Name', count: 0 },
+    // Add more collections...
+];
+```
+Note: The `count` is for display purposes only - actual patterns are loaded dynamically.
 
 ### Customize Colors
 

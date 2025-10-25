@@ -82,6 +82,45 @@ main {
     border-color: var(--primary-color);
 }
 
+.collection-filters-container {
+    margin-bottom: 1rem;
+}
+
+.collection-filters-container > label {
+    display: block;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.collection-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.collection-filter {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.collection-filter:hover {
+    border-color: var(--primary-color);
+}
+
+.collection-filter.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
 .view-controls {
     display: flex;
     gap: 1rem;
@@ -167,7 +206,14 @@ main {
 .pattern-number {
     font-weight: 600;
     color: var(--primary-color);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.pattern-collection {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
 }
 
 .loading {

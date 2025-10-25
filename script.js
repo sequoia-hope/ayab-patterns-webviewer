@@ -1,11 +1,23 @@
 // Configuration
-const REPO_BASE_URL = 'https://raw.githubusercontent.com/AllYarnsAreBeautiful/ayab-patterns/main/StitchWorld/';
-const TOTAL_PATTERNS = 408;
+const REPO_BASE_URL = 'https://raw.githubusercontent.com/AllYarnsAreBeautiful/ayab-patterns/main/';
+const API_BASE_URL = 'https://api.github.com/repos/AllYarnsAreBeautiful/ayab-patterns/contents/';
+
+// Pattern collections configuration
+const COLLECTIONS = [
+    { name: 'StitchWorld', displayName: 'StitchWorld', count: 555 },
+    { name: 'StitchWorld2', displayName: 'StitchWorld 2', count: 40 },
+    { name: 'StitchWorld3', displayName: 'StitchWorld 3', count: 683 },
+    { name: 'StitchWorldExtras', displayName: 'StitchWorld Extras', count: 63 },
+    { name: 'kh910', displayName: 'KH910', count: 36 }
+];
 
 // State
+let allPatterns = [];
 let patterns = [];
 let filteredPatterns = [];
 let currentPatternIndex = 0;
+let selectedCollections = new Set(COLLECTIONS.map(c => c.name));
+let isLoading = false;
 
 // DOM Elements
 const gallery = document.getElementById('gallery');
@@ -21,20 +33,71 @@ const patternCount = document.getElementById('patternCount');
 const prevPattern = document.getElementById('prevPattern');
 const nextPattern = document.getElementById('nextPattern');
 const modalClose = document.querySelector('.modal-close');
+const collectionFilters = document.getElementById('collectionFilters');
 
-// Initialize patterns array
-function initializePatterns() {
-    patterns = [];
-    for (let i = 1; i <= TOTAL_PATTERNS; i++) {
-        const paddedNumber = String(i).padStart(3, '0');
-        patterns.push({
-            number: i,
-            paddedNumber: paddedNumber,
-            filename: `${paddedNumber}.png`,
-            url: `${REPO_BASE_URL}${paddedNumber}.png`
+// Load patterns from GitHub API
+async function loadPatterns() {
+    if (isLoading) return;
+    isLoading = true;
+
+    gallery.innerHTML = '<div class="loading">Loading patterns from all collections...</div>';
+
+    allPatterns = [];
+
+    try {
+        // Load patterns from each collection
+        for (const collection of COLLECTIONS) {
+            const response = await fetch(`${API_BASE_URL}${collection.name}`);
+            const files = await response.json();
+
+            // Filter for PNG files only
+            const pngFiles = files.filter(file =>
+                file.name.toLowerCase().endsWith('.png') && file.type === 'file'
+            );
+
+            // Create pattern objects
+            pngFiles.forEach(file => {
+                allPatterns.push({
+                    filename: file.name,
+                    collection: collection.name,
+                    collectionDisplay: collection.displayName,
+                    url: `${REPO_BASE_URL}${collection.name}/${file.name}`,
+                    githubUrl: file.html_url,
+                    size: file.size
+                });
+            });
+        }
+
+        // Sort by collection then filename
+        allPatterns.sort((a, b) => {
+            if (a.collection !== b.collection) {
+                return COLLECTIONS.findIndex(c => c.name === a.collection) -
+                       COLLECTIONS.findIndex(c => c.name === b.collection);
+            }
+            return a.filename.localeCompare(b.filename);
         });
+
+        applyCollectionFilter();
+
+    } catch (error) {
+        console.error('Error loading patterns:', error);
+        gallery.innerHTML = `
+            <div class="no-results">
+                <h3>Error loading patterns</h3>
+                <p>Please try refreshing the page</p>
+            </div>
+        `;
+    } finally {
+        isLoading = false;
     }
-    filteredPatterns = [...patterns];
+}
+
+// Apply collection filter
+function applyCollectionFilter() {
+    patterns = allPatterns.filter(pattern =>
+        selectedCollections.has(pattern.collection)
+    );
+    filterPatterns();
 }
 
 // Render gallery
@@ -45,7 +108,7 @@ function renderGallery() {
         gallery.innerHTML = `
             <div class="no-results">
                 <h3>No patterns found</h3>
-                <p>Try adjusting your search criteria</p>
+                <p>Try adjusting your search or filter criteria</p>
             </div>
         `;
         return;
@@ -58,11 +121,12 @@ function renderGallery() {
             <img
                 class="pattern-image"
                 src="${pattern.url}"
-                alt="Pattern ${pattern.paddedNumber}"
+                alt="${pattern.filename}"
                 loading="lazy"
             />
             <div class="pattern-info">
-                <div class="pattern-number">Pattern ${pattern.paddedNumber}</div>
+                <div class="pattern-number">${pattern.filename}</div>
+                <div class="pattern-collection">${pattern.collectionDisplay}</div>
             </div>
         `;
         card.addEventListener('click', () => openModal(index));
@@ -75,10 +139,16 @@ function renderGallery() {
 // Update stats
 function updateStats() {
     const showing = filteredPatterns.length;
-    const total = patterns.length;
-    patternCount.textContent = showing === total
-        ? `Showing all ${total} patterns`
-        : `Showing ${showing} of ${total} patterns`;
+    const total = allPatterns.length;
+    const inSelectedCollections = patterns.length;
+
+    if (showing === total) {
+        patternCount.textContent = `Showing all ${total} patterns`;
+    } else if (showing === inSelectedCollections) {
+        patternCount.textContent = `Showing ${showing} patterns from selected collections`;
+    } else {
+        patternCount.textContent = `Showing ${showing} of ${inSelectedCollections} patterns`;
+    }
 }
 
 // Open modal
@@ -87,11 +157,11 @@ function openModal(index) {
     const pattern = filteredPatterns[index];
 
     modalImage.src = pattern.url;
-    modalImage.alt = `Pattern ${pattern.paddedNumber}`;
-    modalTitle.textContent = `Pattern ${pattern.paddedNumber}`;
+    modalImage.alt = pattern.filename;
+    modalTitle.textContent = `${pattern.filename} - ${pattern.collectionDisplay}`;
     downloadLink.href = pattern.url;
     downloadLink.download = pattern.filename;
-    viewOriginal.href = `https://github.com/AllYarnsAreBeautiful/ayab-patterns/blob/main/StitchWorld/${pattern.filename}`;
+    viewOriginal.href = pattern.githubUrl;
 
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
@@ -124,10 +194,10 @@ function filterPatterns() {
     if (!searchTerm) {
         filteredPatterns = [...patterns];
     } else {
-        // Search by pattern number
+        // Search by filename or collection
         filteredPatterns = patterns.filter(pattern => {
-            return pattern.paddedNumber.includes(searchTerm) ||
-                   pattern.number.toString().includes(searchTerm);
+            return pattern.filename.toLowerCase().includes(searchTerm) ||
+                   pattern.collectionDisplay.toLowerCase().includes(searchTerm);
         });
     }
 
@@ -139,7 +209,64 @@ function filterPatterns() {
 function applySorting() {
     const order = sortOrder.value;
     filteredPatterns.sort((a, b) => {
-        return order === 'asc' ? a.number - b.number : b.number - a.number;
+        if (order === 'asc') {
+            // Sort by collection then filename
+            if (a.collection !== b.collection) {
+                return COLLECTIONS.findIndex(c => c.name === a.collection) -
+                       COLLECTIONS.findIndex(c => c.name === b.collection);
+            }
+            return a.filename.localeCompare(b.filename);
+        } else {
+            // Reverse order
+            if (a.collection !== b.collection) {
+                return COLLECTIONS.findIndex(c => c.name === b.collection) -
+                       COLLECTIONS.findIndex(c => c.name === a.collection);
+            }
+            return b.filename.localeCompare(a.filename);
+        }
+    });
+}
+
+// Toggle collection filter
+function toggleCollection(collectionName) {
+    if (selectedCollections.has(collectionName)) {
+        selectedCollections.delete(collectionName);
+    } else {
+        selectedCollections.add(collectionName);
+    }
+
+    // Update button states
+    updateCollectionButtons();
+
+    // Reapply filters
+    applyCollectionFilter();
+}
+
+// Update collection button states
+function updateCollectionButtons() {
+    COLLECTIONS.forEach(collection => {
+        const button = document.getElementById(`filter-${collection.name}`);
+        if (button) {
+            if (selectedCollections.has(collection.name)) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        }
+    });
+}
+
+// Initialize collection filters
+function initCollectionFilters() {
+    collectionFilters.innerHTML = '';
+
+    COLLECTIONS.forEach(collection => {
+        const button = document.createElement('button');
+        button.id = `filter-${collection.name}`;
+        button.className = 'collection-filter active';
+        button.textContent = `${collection.displayName} (${collection.count})`;
+        button.addEventListener('click', () => toggleCollection(collection.name));
+        collectionFilters.appendChild(button);
     });
 }
 
@@ -185,9 +312,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Initialize app
-function init() {
-    initializePatterns();
-    renderGallery();
+async function init() {
+    initCollectionFilters();
+    await loadPatterns();
 }
 
 // Start the app when DOM is ready

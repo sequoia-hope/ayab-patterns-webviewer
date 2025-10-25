@@ -20,9 +20,16 @@
                 <input
                     type="text"
                     id="searchInput"
-                    placeholder="Search patterns by number (e.g., 001, 42, 100)"
+                    placeholder="Search patterns by filename or collection name"
                     aria-label="Search patterns"
                 >
+            </div>
+
+            <div class="collection-filters-container">
+                <label>Collections:</label>
+                <div id="collectionFilters" class="collection-filters">
+                    <!-- Populated by JavaScript -->
+                </div>
             </div>
 
             <div class="view-controls">
@@ -35,8 +42,8 @@
 
                 <label for="sortOrder">Sort:</label>
                 <select id="sortOrder" aria-label="Select sort order">
-                    <option value="asc">1 → 408</option>
-                    <option value="desc">408 → 1</option>
+                    <option value="asc">A → Z</option>
+                    <option value="desc">Z → A</option>
                 </select>
             </div>
         </div>
